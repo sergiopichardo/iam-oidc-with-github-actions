@@ -31,19 +31,19 @@ export class WebsiteStack extends cdk.Stack {
       websitePath: props.websitePath,
     });
 
-    new cdk.CfnOutput(this, 'distributionDomainName', {
+    new cdk.CfnOutput(this, `${props.appName}DistributionDomainName`, {
       value: this.distribution.distributionDomainName,
-      exportName: `distributionDomainName`,
+      exportName: `${props.appName}DistributionDomainName`,
     });
 
-    new cdk.CfnOutput(this, 'websiteBucketName', {
+    new cdk.CfnOutput(this, `${props.appName}WebsiteBucketName`, {
       value: this.websiteBucket.bucketName,
-      exportName: `websiteBucketName`,
+      exportName: `${props.appName}WebsiteBucketName`,
     });
 
-    new cdk.CfnOutput(this, 'cloudFrontDistributionId', {
+    new cdk.CfnOutput(this, `${props.appName}CloudFrontDistributionId`, {
       value: this.distribution.distributionId,
-      exportName: `cloudFrontDistributionId`,
+      exportName: `${props.appName}CloudFrontDistributionId`,
     });
   }
 
