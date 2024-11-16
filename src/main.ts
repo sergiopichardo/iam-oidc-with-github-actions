@@ -6,6 +6,10 @@ import * as cdk from 'aws-cdk-lib';
 import { WebsiteStack } from './website-stack';
 import { GithubOidcStack } from './github-oidc-stack';
 
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 const appName = 'OidcWithGithubActions';
 
 const app = new cdk.App();
