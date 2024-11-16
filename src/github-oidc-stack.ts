@@ -129,14 +129,18 @@ export class GithubOidcStack extends cdk.Stack {
         existingProviderArn?: string;
     }): iam.IOpenIdConnectProvider {
 
+        let provider: iam.IOpenIdConnectProvider;
+
         if (props.existingProviderArn) {
-            return iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(this,
+            provider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(this,
                 `${props.appName}GithubProvider`,
                 props.existingProviderArn as string,
             );
+
+            if (provider) return provider;
         }
 
-        const provider = new iam.OpenIdConnectProvider(this, `${props.appName}GithubProvider`, {
+        provider = new iam.OpenIdConnectProvider(this, `${props.appName}GithubProvider`, {
             url: props.providerUrl,
             clientIds: props.clientIdsList,
             // Thumbprints are used by AWS to verify the authenticity of GitHub's OIDC tokens

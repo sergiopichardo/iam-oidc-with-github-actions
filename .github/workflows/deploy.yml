@@ -1,0 +1,31 @@
+name: Simple Deploy
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - sergio-pichardo-cloud-deploymnt-challenge
+permissions:
+  id-token: write
+  contents: read
+env:
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+jobs:
+  deploy:
+    name: deploy website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Upload website to S3
+        run: |
+          aws s3 cp web/index.html s3://${{ secrets.S3_BUCKET_NAME }}/index.html
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
