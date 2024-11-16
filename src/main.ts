@@ -15,10 +15,15 @@ const websiteStack = new WebsiteStack(app, `${appName}-WebsiteStack`, {
   websitePath: path.join(__dirname, '..', 'site'),
 });
 
+const allowedRepositories = process.env.ALLOWED_REPOSITORIES?.split(',') ?? [];
+const githubThumbprintsList = process.env.EXISTING_GITHUB_THUMBPRINTS?.split(',') ?? [];
+const existingProviderArn = process.env.EXISTING_GITHUB_PROVIDER_ARN;
+
 new GithubOidcStack(app, `${appName}-GithubOidcStack`, {
   appName,
   distribution: websiteStack.distribution,
   websiteBucket: websiteStack.websiteBucket,
-  allowedRepositories: ['sergiopichardo/iam-oidc-with-github-actions'],
-  githubThumbprintsList: ['d89e3bd43d5d909b47a18977aa9d5ce36cee184c'],
+  allowedRepositories,
+  githubThumbprintsList,
+  existingProviderArn,
 });

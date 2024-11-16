@@ -10,7 +10,8 @@ interface GithubOidcStackProps extends cdk.StackProps {
     distribution: cloudfront.Distribution;
     websiteBucket: s3.Bucket;
     allowedRepositories: string[];
-    githubThumbprintsList: string[];
+    githubThumbprintsList?: string[];
+    existingProviderArn?: string;
 }
 
 export class GithubOidcStack extends cdk.Stack {
@@ -24,16 +25,16 @@ export class GithubOidcStack extends cdk.Stack {
     // This allows GitHub Actions to authenticate with AWS using OIDC federation
     private readonly clientId = 'sts.amazonaws.com';
 
-    private readonly props: GithubOidcStackProps;
-
     constructor(scope: Construct, id: string, props: GithubOidcStackProps) {
         super(scope, id, props);
-        this.props = props;
 
-        const githubProvider = this.createGithubProvider({
-            url: `https://${this.githubDomain}`,
+        // Instead of creating a new provider
+        const provider = this.getOrCreateGithubProvider({
             appName: props.appName,
             githubThumbprintsList: props.githubThumbprintsList,
+            providerUrl: `https://${this.githubDomain}`,
+            clientIdsList: [this.clientId],
+            existingProviderArn: props.existingProviderArn,
         });
 
         const conditions = this.createOidcConditions({
@@ -44,24 +45,13 @@ export class GithubOidcStack extends cdk.Stack {
             appName: props.appName,
             originBucket: props.websiteBucket,
             distribution: props.distribution,
-            githubProvider,
+            githubProvider: provider,
             conditions,
         });
 
         this.createOutputs({
             githubActionsRole,
-        });
-    }
-
-    private createGithubProvider(props: {
-        url: string;
-        appName: string;
-        githubThumbprintsList: string[];
-    }): iam.OpenIdConnectProvider {
-        return new iam.OpenIdConnectProvider(this, `${props.appName}GithubOidcProvider`, {
-            url: props.url,
-            clientIds: [this.clientId],
-            thumbprints: props.githubThumbprintsList,
+            appName: props.appName,
         });
     }
 
@@ -82,12 +72,13 @@ export class GithubOidcStack extends cdk.Stack {
 
     private setupIamConfiguration(props: {
         appName: string,
-        githubProvider: iam.OpenIdConnectProvider,
+        githubProvider: iam.IOpenIdConnectProvider,
         conditions: iam.Conditions,
         originBucket: s3.Bucket,
         distribution: cloudfront.Distribution,
     }): iam.Role {
         const policyDocument = new iam.PolicyDocument({
+            // TODO: restrict policies to only allow specific actions
             statements: [
                 // S3 permissions
                 new iam.PolicyStatement({
@@ -107,25 +98,54 @@ export class GithubOidcStack extends cdk.Stack {
             ],
         });
 
-        return new iam.Role(this, 'GitHubActionsRole', {
-            roleName: `${this.props.appName}GitHubActionsRole`,
+        return new iam.Role(this, `${props.appName}GitHubActionsRole`, {
+            roleName: `${props.appName}GitHubActionsRole`,
             assumedBy: new iam.WebIdentityPrincipal(
                 props.githubProvider.openIdConnectProviderArn,
                 props.conditions,
             ),
 
             inlinePolicies: {
-                'GitHubActionsPolicy': policyDocument,
+                [`${props.appName}GitHubActionsPolicy`]: policyDocument,
             },
         });
     }
 
     private createOutputs(props: {
         githubActionsRole: iam.Role;
+        appName: string;
     }): void {
-        new cdk.CfnOutput(this, 'gitHubActionsRoleArn', {
+        new cdk.CfnOutput(this, `${props.appName}GitHubActionsRoleArn`, {
             value: props.githubActionsRole.roleArn,
-            exportName: `gitHubActionsRoleArn`,
+            exportName: `${props.appName}GitHubActionsRoleArn`,
         });
+    }
+
+    private getOrCreateGithubProvider(props: {
+        appName: string;
+        githubThumbprintsList?: string[];
+        providerUrl: string;
+        clientIdsList: string[];
+        existingProviderArn?: string;
+    }): iam.IOpenIdConnectProvider {
+
+        if (props.existingProviderArn) {
+            return iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(this,
+                `${props.appName}GithubProvider`,
+                props.existingProviderArn as string,
+            );
+        }
+
+        const provider = new iam.OpenIdConnectProvider(this, `${props.appName}GithubProvider`, {
+            url: props.providerUrl,
+            clientIds: props.clientIdsList,
+            // Thumbprints are used by AWS to verify the authenticity of GitHub's OIDC tokens
+            // If AWS can't verify the token through standard OIDC verification,
+            // it will validate the token's signature using these certificate thumbprints
+            // as a fallback mechanism to establish trust
+            thumbprints: props.githubThumbprintsList,
+        });
+
+        return provider;
     }
 }
