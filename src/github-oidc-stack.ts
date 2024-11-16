@@ -10,66 +10,121 @@ interface GithubOidcStackProps extends cdk.StackProps {
     distribution: cloudfront.Distribution;
     websiteBucket: s3.Bucket;
     allowedRepositories: string[];
+    githubThumbprintsList: string[];
 }
 
 export class GithubOidcStack extends cdk.Stack {
+
+    // GitHub's OIDC provider domain that issues JWT tokens when GitHub Actions workflows run
+    // These tokens contain claims about the workflow context (repository, branch, etc)
+    // AWS uses this domain to verify the token signature and establish trust
+    private readonly githubDomain = 'token.actions.githubusercontent.com';
+
+    // Client ID for AWS STS service - used as the audience (aud) claim in GitHub's OIDC tokens
+    // This allows GitHub Actions to authenticate with AWS using OIDC federation
+    private readonly clientId = 'sts.amazonaws.com';
+
+    private readonly props: GithubOidcStackProps;
+
     constructor(scope: Construct, id: string, props: GithubOidcStackProps) {
         super(scope, id, props);
+        this.props = props;
 
-        const githubDomain = 'token.actions.githubusercontent.com';
-        const clientId = 'sts.amazonaws.com';
-
-        /**
-         * Creates an OpenIdConnectProvider for GitHub OIDC
-         *  - appName: the name of the app
-         *  - providerUrl: where github generates and stores its OIDC tokens
-         *  - clientIds: the client IDs that are allowed to use the tokens, in this case, it's STS used for IAM authentication
-         */
-        const githubProvider = new iam.OpenIdConnectProvider(this, `${props.appName}GithubOidcProvider`, {
-            url: `https://${githubDomain}`,
-            clientIds: [clientId],
+        const githubProvider = this.createGithubProvider({
+            url: `https://${this.githubDomain}`,
+            appName: props.appName,
+            githubThumbprintsList: props.githubThumbprintsList,
         });
 
+        const conditions = this.createOidcConditions({
+            allowedRepositories: props.allowedRepositories,
+        });
 
-        // CONDITIONS
+        const githubActionsRole = this.setupIamConfiguration({
+            appName: props.appName,
+            originBucket: props.websiteBucket,
+            distribution: props.distribution,
+            githubProvider,
+            conditions,
+        });
+
+        this.createOutputs({
+            githubActionsRole,
+        });
+    }
+
+    private createGithubProvider(props: {
+        url: string;
+        appName: string;
+        githubThumbprintsList: string[];
+    }): iam.OpenIdConnectProvider {
+        return new iam.OpenIdConnectProvider(this, `${props.appName}GithubOidcProvider`, {
+            url: props.url,
+            clientIds: [this.clientId],
+            thumbprints: props.githubThumbprintsList,
+        });
+    }
+
+    private createOidcConditions(props: {
+        allowedRepositories: string[];
+    }): iam.Conditions {
         const allowedRepositories = props.allowedRepositories.map(repo => `repo:${repo}`);
 
-        const conditions: iam.Conditions = {
+        return {
             StringEquals: {
-                [`${githubDomain}:aud`]: clientId,
+                [`${this.githubDomain}:aud`]: this.clientId,
             },
             StringLike: {
-                [`${githubDomain}:sub`]: allowedRepositories,
+                [`${this.githubDomain}:sub`]: allowedRepositories,
             },
         };
+    }
 
-        const githubActionsRole = new iam.Role(this, 'GitHubActionsRole', {
-            roleName: `${props.appName}GitHubActionsRole`,
-            assumedBy: new iam.WebIdentityPrincipal(
-                githubProvider.openIdConnectProviderArn,
-                conditions,
-            ),
-            inlinePolicies: {
-                'GitHubActionsPolicy': new iam.PolicyDocument({
-                    statements: [
-                        new iam.PolicyStatement({
-                            actions: ['s3:*'],
-                            resources: [
-                                props.websiteBucket.bucketArn,
-                                `${props.websiteBucket.bucketArn}/*`,
-                            ],
-                        }),
-                        new iam.PolicyStatement({
-                            actions: ['cloudfront:*'],
-                            resources: [`arn:aws:cloudfront::${cdk.Stack.of(this).account}:distribution/${props.distribution.distributionId}`],
-                        }),
+    private setupIamConfiguration(props: {
+        appName: string,
+        githubProvider: iam.OpenIdConnectProvider,
+        conditions: iam.Conditions,
+        originBucket: s3.Bucket,
+        distribution: cloudfront.Distribution,
+    }): iam.Role {
+        const policyDocument = new iam.PolicyDocument({
+            statements: [
+                // S3 permissions
+                new iam.PolicyStatement({
+                    actions: ['s3:*'],
+                    resources: [
+                        props.originBucket.bucketArn,
+                        `${props.originBucket.bucketArn}/*`,
                     ],
                 }),
-            },
+                // CloudFront permissions
+                new iam.PolicyStatement({
+                    actions: ['cloudfront:*'],
+                    resources: [
+                        `arn:aws:cloudfront::${cdk.Stack.of(this).account}:distribution/${props.distribution.distributionId}`
+                    ],
+                }),
+            ],
         });
 
+        return new iam.Role(this, 'GitHubActionsRole', {
+            roleName: `${this.props.appName}GitHubActionsRole`,
+            assumedBy: new iam.WebIdentityPrincipal(
+                props.githubProvider.openIdConnectProviderArn,
+                props.conditions,
+            ),
+
+            inlinePolicies: {
+                'GitHubActionsPolicy': policyDocument,
+            },
+        });
+    }
+
+    private createOutputs(props: {
+        githubActionsRole: iam.Role;
+    }): void {
         new cdk.CfnOutput(this, 'gitHubActionsRoleArn', {
-            value: githubActionsRole.roleArn,
+            value: props.githubActionsRole.roleArn,
             exportName: `gitHubActionsRoleArn`,
         });
     }

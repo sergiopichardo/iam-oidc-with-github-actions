@@ -19,7 +19,6 @@ new GithubOidcStack(app, `${appName}-GithubOidcStack`, {
   appName,
   distribution: websiteStack.distribution,
   websiteBucket: websiteStack.websiteBucket,
-  allowedRepositories: [
-    'sergiopichardo/iam-oidc-with-github-actions',
-  ],
+  allowedRepositories: ['sergiopichardo/iam-oidc-with-github-actions'],
+  githubThumbprintsList: ['d89e3bd43d5d909b47a18977aa9d5ce36cee184c'],
 });
