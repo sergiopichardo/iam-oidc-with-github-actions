@@ -1,7 +1,7 @@
 import { getConfig } from '../config/get-config';
-import { parameterToEnvarName } from '../lib/parameter-to-envar-mapping';
+import { parameterToEnvarMapper } from '../lib/parameter-to-envar-mapper';
 import { createGithubSecrets, deleteGithubSecrets } from '../lib/github-secrets-interactor';
-import { getAllSsmParameters } from '../lib/ssm-parameters-interactor';
+import { getAllSsmParameters } from '../lib/ssm-parameter-interactor';
 
 
 /**
@@ -20,7 +20,7 @@ async function ssmParamsToSecrets() {
         ]);
 
         const envarNameRegex = /.*\/([^/]+)$/; // e.g. /my-app/APP_NAME -> APP_NAME
-        const envarNameMapping = parameterToEnvarName(secrets, envarNameRegex);
+        const envarNameMapping = parameterToEnvarMapper(secrets, envarNameRegex);
 
         deleteGithubSecrets(envarNameMapping); // Delete first to avoid conflicts
         createGithubSecrets(envarNameMapping); // Then create new secrets

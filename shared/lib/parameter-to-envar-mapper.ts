@@ -27,8 +27,7 @@ export const parameterToEnvarMapper = (
 
 // Testing
 // const regex = /.*\/([^/]+)$/;
-// console.log(parameterToEnvarName([
-//     { key: '/my-app/appName', value: 'my-app' },
-//     { key: '/my-app/AWS_ACCOUNT_ID', value: '1234567890' },
-//     { key: '/my-app/awsRegion123', value: 'us-east-1' }
+// console.log(parameterToEnvarMapper([
+//     { key: '/OidcWithGithubActions/APP_NAME', value: 'OidcWithGithubActions' },
+//     { key: '/OidcWithGithubActions/AWS_REGION', value: 'us-east-1' }
 // ], regex));

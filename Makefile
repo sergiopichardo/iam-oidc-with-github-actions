@@ -5,4 +5,4 @@ destroy:
 	cdk destroy --all --profile default
 
 postdeploy:
-	ts-node ./helpers/ssm-params-to-secrets.ts
+	ts-node ./shared/scripts/generate-or-update-github-secrets.ts

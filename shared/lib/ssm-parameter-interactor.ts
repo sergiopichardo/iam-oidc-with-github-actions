@@ -65,3 +65,10 @@ export const getAllSsmParameters = async (
     }
 }
 
+// Testing
+// getAllSsmParameters([
+//     { ssmKey: '/OidcWithGithubActions/APP_NAME' },
+//     { ssmKey: '/OidcWithGithubActions/AWS_ACCOUNT_ID' },
+// ]).then((parameters) => {
+//     console.log(parameters);
+// });

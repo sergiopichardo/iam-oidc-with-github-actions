@@ -37,7 +37,7 @@ export const deleteGithubSecrets = (secrets: { key: string, value?: string }[]) 
 //     { key: 'AWS_ACCOUNT_ID', value: getConfig('awsAccountId') },
 //     { key: 'AWS_REGION', value: getConfig('awsRegion') },
 // ]);
-// createGithubSecrets([
-//     { key: 'AWS_ACCOUNT_ID', value: getConfig('awsAccountId') },
-//     { key: 'AWS_REGION', value: getConfig('awsRegion') },
-// ]);
+createGithubSecrets([
+    { key: 'AWS_ACCOUNT_ID', value: getConfig('awsAccountId') },
+    { key: 'AWS_REGION', value: getConfig('awsRegion') },
+]);

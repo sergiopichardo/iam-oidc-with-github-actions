@@ -19,8 +19,9 @@ async function generateOrUpdateSecrets() {
             { ssmKey: `/${appName}/CLOUDFRONT_DISTRIBUTION_ID` }
         ]);
 
-        const getParamNameRegex = /.*\/([A-Z_]+)$/;
+        const getParamNameRegex = /.*\/([A-Z_0-9a-z]+)$/;
         const envarMapping = parameterToEnvarMapper(secrets, getParamNameRegex);
+        console.log(envarMapping);
 
         deleteGithubSecrets(envarMapping); // Delete first to avoid conflicts
         createGithubSecrets(envarMapping); // Then create new secrets
