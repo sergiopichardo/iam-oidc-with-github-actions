@@ -19,7 +19,7 @@ async function ssmParamsToSecrets() {
             { ssmKey: `/${appName}/CLOUDFRONT_DISTRIBUTION_ID` }
         ]);
 
-        const envarNameRegex = /.*\/([A-Z_]+)$/;
+        const envarNameRegex = /.*\/([A-Z_]+)$/; // e.g. /my-app/APP_NAME -> APP_NAME
         const envarNameMapping = parameterToEnvarName(secrets, envarNameRegex);
 
         deleteGithubSecrets(envarNameMapping); // Delete first to avoid conflicts

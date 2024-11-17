@@ -11,14 +11,17 @@
 export const parameterToEnvarName = (
     mapping: { key: string, value: string }[],
     regex: RegExp
-): { [key: string]: string } => {
+): { key: string, value: string }[] => {
 
-    return mapping.reduce((acc: { [key: string]: string }, item) => {
+    const envarMapping: { key: string, value: string }[] = [];
+
+    mapping.forEach((item) => {
         const { key, value } = item;
 
         const transformedKey = key.replace(regex, '');
-        acc[transformedKey] = value;
 
-        return acc;
-    }, {} as { [key: string]: string });
+        envarMapping.push({ key: transformedKey, value: value });
+    });
+
+    return envarMapping;
 }
