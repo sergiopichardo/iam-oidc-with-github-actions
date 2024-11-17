@@ -3,3 +3,6 @@ deploy:
 
 destroy:
 	cdk destroy --all --profile default
+
+postdeploy:
+	ts-node ./helpers/ssm-params-to-secrets.ts
