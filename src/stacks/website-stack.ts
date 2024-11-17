@@ -4,6 +4,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 interface WebsiteStackProps extends cdk.StackProps {
   appName: string;
@@ -31,6 +32,7 @@ export class WebsiteStack extends cdk.Stack {
       websitePath: props.websitePath,
     });
 
+
     new cdk.CfnOutput(this, `${props.appName}DistributionDomainName`, {
       value: this.distribution.distributionDomainName,
       exportName: `${props.appName}DistributionDomainName`,
@@ -39,6 +41,13 @@ export class WebsiteStack extends cdk.Stack {
     new cdk.CfnOutput(this, `${props.appName}WebsiteBucketName`, {
       value: this.websiteBucket.bucketName,
       exportName: `${props.appName}WebsiteBucketName`,
+    });
+
+    new ssm.StringParameter(this, `${props.appName}-SSM-DistributionId`, {
+      description: 'The CloudFront distribution ID',
+      parameterName: `/${props.appName}/CLOUDFRONT_DISTRIBUTION_ID`,
+      stringValue: this.distribution.distributionId,
+      tier: ssm.ParameterTier.STANDARD,
     });
 
     new cdk.CfnOutput(this, `${props.appName}CloudFrontDistributionId`, {
