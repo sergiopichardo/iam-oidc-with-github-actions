@@ -10,7 +10,8 @@
     "test": "jest",
     "cdk": "cdk",
     "deploy": "make deploy",
-    "destroy": "make destroy"
+    "destroy": "make destroy",
+    "postdeploy": "make postdeploy"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
