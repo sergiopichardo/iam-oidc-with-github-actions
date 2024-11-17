@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { getConfig } from '../config/get-config';
 
 export const createGithubSecrets = (secrets: { key: string, value: string }[]) => {
     for (const { key, value } of secrets) {
@@ -8,11 +9,11 @@ export const createGithubSecrets = (secrets: { key: string, value: string }[]) =
     }
 }
 
-export const deleteGithubSecrets = (secrets: { key: string }[]) => {
+export const deleteGithubSecrets = (secrets: { key: string, value?: string }[]) => {
     for (const { key } of secrets) {
         try {
 
-            execSync(`gh secret remove ${key}`, {
+            execSync(`gh secret remove ${key} 2>/dev/null && echo "Deleted ${key}"`, {
                 /*
                   This array represents [stdin, stdout, stderr], where:
                     -  'inherit' for stdin keeps input handling
@@ -23,10 +24,20 @@ export const deleteGithubSecrets = (secrets: { key: string }[]) => {
                 */
                 stdio: ['inherit', 'inherit', 'ignore'],
             });
-            console.log(`Deleted ${key}`);
+
         } catch (error) {
             // Suppress errors similar to 2>/dev/null in bash
             console.log(`Secret ${key} not found or already deleted`);
         }
     }
 }
+
+// Testing
+// deleteGithubSecrets([
+//     { key: 'AWS_ACCOUNT_ID', value: getConfig('awsAccountId') },
+//     { key: 'AWS_REGION', value: getConfig('awsRegion') },
+// ]);
+// createGithubSecrets([
+//     { key: 'AWS_ACCOUNT_ID', value: getConfig('awsAccountId') },
+//     { key: 'AWS_REGION', value: getConfig('awsRegion') },
+// ]);

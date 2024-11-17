@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 
 interface GithubOidcStackProps extends cdk.StackProps {
@@ -49,9 +50,11 @@ export class GithubOidcStack extends cdk.Stack {
             conditions,
         });
 
-        this.createOutputs({
-            githubActionsRole,
-            appName: props.appName,
+        new ssm.StringParameter(this, `${props.appName}-RoleToAssume-Parameter`, {
+            description: 'The IAM role ARN for GitHub Actions to assume',
+            parameterName: `/${props.appName}/ROLE_TO_ASSUME_ARN`,
+            stringValue: githubActionsRole.roleArn,
+            tier: ssm.ParameterTier.STANDARD,
         });
     }
 
@@ -108,16 +111,6 @@ export class GithubOidcStack extends cdk.Stack {
             inlinePolicies: {
                 [`${props.appName}GitHubActionsPolicy`]: policyDocument,
             },
-        });
-    }
-
-    private createOutputs(props: {
-        githubActionsRole: iam.Role;
-        appName: string;
-    }): void {
-        new cdk.CfnOutput(this, `${props.appName}GitHubActionsRoleArn`, {
-            value: props.githubActionsRole.roleArn,
-            exportName: `${props.appName}GitHubActionsRoleArn`,
         });
     }
 

@@ -1,6 +1,6 @@
 export interface IAppConfig {
     appName: string;
-    awsAccount: string;
+    awsAccountId: string;
     awsRegion: string;
     allowedRepositories: string;
     githubThumbprintsList: string;
@@ -14,7 +14,7 @@ export const getConfig = (key: keyof IAppConfig): string => {
 
     const {
         APP_NAME,
-        AWS_ACCOUNT,
+        AWS_ACCOUNT_ID,
         AWS_REGION,
         ALLOWED_REPOSITORIES,
         EXISTING_GITHUB_THUMBPRINTS,
@@ -25,8 +25,8 @@ export const getConfig = (key: keyof IAppConfig): string => {
         throw new Error("APP_NAME is not set");
     }
 
-    if (!AWS_ACCOUNT) {
-        throw new Error("AWS_ACCOUNT is not set");
+    if (!AWS_ACCOUNT_ID) {
+        throw new Error("AWS_ACCOUNT_ID is not set");
     }
 
     if (!AWS_REGION) {
@@ -47,7 +47,7 @@ export const getConfig = (key: keyof IAppConfig): string => {
 
     const configMap: IAppConfig = {
         appName: APP_NAME,
-        awsAccount: AWS_ACCOUNT,
+        awsAccountId: AWS_ACCOUNT_ID,
         awsRegion: AWS_REGION,
         allowedRepositories: ALLOWED_REPOSITORIES,
         githubThumbprintsList: EXISTING_GITHUB_THUMBPRINTS,

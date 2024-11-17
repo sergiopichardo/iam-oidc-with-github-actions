@@ -10,18 +10,25 @@
  */
 export const parameterToEnvarName = (
     mapping: { key: string, value: string }[],
-    regex: RegExp
+    regex: RegExp // Regex with capture group for last segment
 ): { key: string, value: string }[] => {
-
     const envarMapping: { key: string, value: string }[] = [];
 
     mapping.forEach((item) => {
         const { key, value } = item;
+        const match = key.match(regex);
+        const transformedKey = match ? match[1] : key; // Use the captured group at index 1
 
-        const transformedKey = key.replace(regex, '');
-
-        envarMapping.push({ key: transformedKey, value: value });
+        envarMapping.push({ key: transformedKey, value });
     });
 
     return envarMapping;
 }
+
+// Testing
+// const regex = /.*\/([^/]+)$/;
+// console.log(parameterToEnvarName([
+//     { key: '/my-app/appName', value: 'my-app' },
+//     { key: '/my-app/AWS_ACCOUNT_ID', value: '1234567890' },
+//     { key: '/my-app/awsRegion123', value: 'us-east-1' }
+// ], regex));

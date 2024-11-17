@@ -5,10 +5,12 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import { getConfig } from '../../config/get-config';
 
 interface WebsiteStackProps extends cdk.StackProps {
   appName: string;
   websitePath: string;
+  awsRegion: string;
 }
 
 
@@ -32,27 +34,44 @@ export class WebsiteStack extends cdk.Stack {
       websitePath: props.websitePath,
     });
 
-
-    new cdk.CfnOutput(this, `${props.appName}DistributionDomainName`, {
+    new cdk.CfnOutput(this, `DistributionDomain-${props.appName}`, {
       value: this.distribution.distributionDomainName,
-      exportName: `${props.appName}DistributionDomainName`,
+      exportName: `DistributionDomain-${props.appName}`,
     });
 
-    new cdk.CfnOutput(this, `${props.appName}WebsiteBucketName`, {
-      value: this.websiteBucket.bucketName,
-      exportName: `${props.appName}WebsiteBucketName`,
+    new ssm.StringParameter(this, `${props.appName}-DistributionDomain-Parameter`, {
+      description: 'Application Name',
+      parameterName: `/${props.appName}/APP_NAME`,
+      stringValue: props.appName,
+      tier: ssm.ParameterTier.STANDARD,
     });
 
-    new ssm.StringParameter(this, `${props.appName}-SSM-DistributionId`, {
+    new ssm.StringParameter(this, `${props.appName}-AWSRegion-Parameter`, {
+      description: 'AWS region',
+      parameterName: `/${props.appName}/AWS_REGION`,
+      stringValue: props.awsRegion,
+      tier: ssm.ParameterTier.STANDARD,
+    });
+
+    new ssm.StringParameter(this, `${props.appName}-AccountId-Parameter`, {
+      description: 'AWS account ID',
+      parameterName: `/${props.appName}/AWS_ACCOUNT_ID`, 
+      stringValue: cdk.Stack.of(this).account,
+      tier: ssm.ParameterTier.STANDARD,
+    });
+
+    new ssm.StringParameter(this, `${props.appName}-BucketName-Parameter`, {
+      description: 'The S3 website bucket name',
+      parameterName: `/${props.appName}/S3_BUCKET_NAME`,
+      stringValue: this.websiteBucket.bucketName,
+      tier: ssm.ParameterTier.STANDARD,
+    });
+
+    new ssm.StringParameter(this, `${props.appName}-DistributionId-Parameter`, {
       description: 'The CloudFront distribution ID',
       parameterName: `/${props.appName}/CLOUDFRONT_DISTRIBUTION_ID`,
       stringValue: this.distribution.distributionId,
       tier: ssm.ParameterTier.STANDARD,
-    });
-
-    new cdk.CfnOutput(this, `${props.appName}CloudFrontDistributionId`, {
-      value: this.distribution.distributionId,
-      exportName: `${props.appName}CloudFrontDistributionId`,
     });
   }
 

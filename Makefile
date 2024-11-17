@@ -1,6 +1,5 @@
 deploy:
-	cdk deploy --all --profile default --require-approval never --outputs-file ./cdk-outputs.json
-
+	cdk deploy --all --profile default --require-approval never
 
 destroy:
 	cdk destroy --all --profile default

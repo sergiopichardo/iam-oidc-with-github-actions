@@ -18,6 +18,7 @@ const appName = getConfig('appName');
 const websiteStack = new WebsiteStack(app, `${appName}-WebsiteStack`, {
   appName,
   websitePath: path.join(__dirname, '..', 'site'),
+  awsRegion: getConfig('awsRegion'),
 });
 
 new GithubOidcStack(app, `${appName}-GithubOidcStack`, {

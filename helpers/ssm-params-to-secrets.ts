@@ -12,14 +12,14 @@ async function ssmParamsToSecrets() {
     try {
         const secrets = await getAllSsmParameters([
             { ssmKey: `/${appName}/APP_NAME` },
-            { ssmKey: `/${appName}/AWS_ACCOUNT_ID` },
             { ssmKey: `/${appName}/AWS_REGION` },
+            { ssmKey: `/${appName}/AWS_ACCOUNT_ID` },
             { ssmKey: `/${appName}/ROLE_TO_ASSUME_ARN` },
             { ssmKey: `/${appName}/S3_BUCKET_NAME` },
             { ssmKey: `/${appName}/CLOUDFRONT_DISTRIBUTION_ID` }
         ]);
 
-        const envarNameRegex = /.*\/([A-Z_]+)$/; // e.g. /my-app/APP_NAME -> APP_NAME
+        const envarNameRegex = /.*\/([^/]+)$/; // e.g. /my-app/APP_NAME -> APP_NAME
         const envarNameMapping = parameterToEnvarName(secrets, envarNameRegex);
 
         deleteGithubSecrets(envarNameMapping); // Delete first to avoid conflicts
