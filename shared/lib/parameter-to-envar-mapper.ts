@@ -8,7 +8,7 @@
  * @returns The environment variables object
  *          e.g. { APP_NAME: 'my-app', AWS_ACCOUNT_ID: '1234567890' }
  */
-export const parameterToEnvarName = (
+export const parameterToEnvarMapper = (
     mapping: { key: string, value: string }[],
     regex: RegExp // Regex with capture group for last segment
 ): { key: string, value: string }[] => {

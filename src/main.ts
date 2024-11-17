@@ -7,7 +7,7 @@ import { WebsiteStack } from './stacks/website-stack';
 import { GithubOidcStack } from './stacks/github-oidc-stack';
 
 import * as dotenv from 'dotenv';
-import { getConfig } from '../config/get-config';
+import { getConfig } from '../shared/config/get-config';
 
 dotenv.config();
 

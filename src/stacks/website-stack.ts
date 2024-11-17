@@ -5,7 +5,7 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
-import { getConfig } from '../../config/get-config';
+import { getConfig } from '../../shared/config/get-config';
 
 interface WebsiteStackProps extends cdk.StackProps {
   appName: string;
@@ -55,7 +55,7 @@ export class WebsiteStack extends cdk.Stack {
 
     new ssm.StringParameter(this, `${props.appName}-AccountId-Parameter`, {
       description: 'AWS account ID',
-      parameterName: `/${props.appName}/AWS_ACCOUNT_ID`, 
+      parameterName: `/${props.appName}/AWS_ACCOUNT_ID`,
       stringValue: cdk.Stack.of(this).account,
       tier: ssm.ParameterTier.STANDARD,
     });
