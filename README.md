@@ -2,6 +2,19 @@
 
 This project demonstrates how to set up an IAM OIDC identity provider for GitHub Actions to assume an IAM role.
 
-![GitHub Actions](./images/iam-oidc-sequence-diagram.png)
+![GitHub Actions](./assets/iam-oidc-sequence-diagram.png)
 
-You can learn more about IAM OIDC [here](https://sergiopichardo.com/posts/github-actions-and-iam-oidc).
+I've written a blog post about this project. You can read it [here](https://sergiopichardo.com/posts/github-actions-and-iam-oidc).
+
+
+## Prerequisites
+
+- AWS CLI 
+- AWS CDK
+
+## To run the project 
+
+1. Clone the repository
+2. Install dependencies
+3. Run `npm run deploy`
+
