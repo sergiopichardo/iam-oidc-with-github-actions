@@ -1,14 +1,7 @@
-# Welcome to your CDK TypeScript project
+# IAM OIDC with GitHub Actions
 
-This is a blank project for CDK development with TypeScript.
+This project demonstrates how to set up an IAM OIDC identity provider for GitHub Actions to assume an IAM role.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+![GitHub Actions](./images/iam-oidc-sequence-diagram.png)
 
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+You can learn more about IAM OIDC [here](https://sergiopichardo.com/posts/github-actions-and-iam-oidc).
